@@ -1,0 +1,21 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Build artifacts
+*.lock
+Cargo.lock
+
+# Env & secrets
+.env
+*.pem
+*.key
+out/
+/src/aws2.rs
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
