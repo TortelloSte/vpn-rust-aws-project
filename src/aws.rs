@@ -1,10 +1,12 @@
 use std::process::Command;
 
+// Structure to hold EC2 instance information
 pub struct InstanceInfo {
     pub instance_id: String,
     pub public_ip: String,
 }
 
+// Function to get an existing EC2 instance or create a new one
 pub fn get_or_create_instance() -> InstanceInfo {
     let output = Command::new("aws")
         .args([
@@ -23,7 +25,8 @@ pub fn get_or_create_instance() -> InstanceInfo {
         let parts: Vec<&str> = result.split_whitespace().collect();
 
         if parts.len() == 2 {
-            println!("♻️ Istanza già esistente trovata.");
+            // Existing instance found
+            println!("Existing instance found.");
             return InstanceInfo {
                 instance_id: parts[0].to_string(),
                 public_ip: parts[1].to_string(),
@@ -31,34 +34,36 @@ pub fn get_or_create_instance() -> InstanceInfo {
         }
     }
 
-    // Altrimenti la crea
+    // Otherwise, create a new instance
     create_instance()
 }
 
+// Function to create a new EC2 instance
 pub fn create_instance() -> InstanceInfo {
     let output = Command::new("aws")
         .args([
             "ec2", "run-instances",
-            "--image-id", "", // add ami
+            "--image-id", "", // add AMI ID here
             "--instance-type", "t3.micro",
-            "--key-name", "", // add key name
+            "--key-name", "", // add SSH key name here
             "--security-groups", "default",
             "--region", "eu-south-1",
-            "--tag-specifications", "ResourceType=instance,Tags=[{Key=Name,Value=}]", // add value
+            "--tag-specifications", "ResourceType=instance,Tags=[{Key=Name,Value=}]"," +
+              " // add tag value here
             "--query", "Instances[0].InstanceId",
             "--output", "text"
         ])
         .output()
         .expect("Failed to run AWS CLI");
 
-    // 👇 Log stdout e stderr per capire eventuali errori
-    println!("✅ EC2 creation output (stdout): {}", String::from_utf8_lossy(&output.stdout));
-    println!("⚠️ EC2 creation error (stderr): {}", String::from_utf8_lossy(&output.stderr));
+    // Log stdout and stderr to help diagnose potential errors
+    println!("EC2 creation output (stdout): {}", String::from_utf8_lossy(&output.stdout));
+    println!("EC2 creation error (stderr): {}", String::from_utf8_lossy(&output.stderr));
 
     let instance_id = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
     if instance_id.is_empty() {
-        panic!("❌ Instance ID vuoto. Qualcosa è andato storto durante la creazione.");
+        panic!("Empty instance ID. Something went wrong during creation.");
     }
 
     let _ = Command::new("aws")
@@ -83,7 +88,8 @@ pub fn create_instance() -> InstanceInfo {
 
     let public_ip = String::from_utf8_lossy(&ip_output.stdout).trim().to_string();
 
-    println!("✅ Istanza creata: {}", public_ip);
+    // Instance successfully created
+    println!("Instance created: {}", public_ip);
 
     InstanceInfo {
         instance_id,

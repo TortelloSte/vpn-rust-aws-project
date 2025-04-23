@@ -11,19 +11,25 @@ mod wireguard;
 use aws::InstanceInfo;
 
 fn main() {
+    // Load environment variables from .env file
     dotenv::dotenv().ok();
     config::check_env();
 
-    println!("➡️  Avvio creazione istanza EC2 nella zona designata...");
+    // Starting EC2 instance creation in designated region...
+    println!("Starting EC2 instance creation in the designated region...");
     let instance = aws::get_or_create_instance();
 
-    println!("✅ Istanza creata: {}", instance.public_ip);
+    // Instance successfully created
+    println!("Instance created: {}", instance.public_ip);
 
-    println!("🔐 Connessione via SSH per configurare WireGuard...");
+    // Connect via SSH to configure WireGuard
+    println!("Connecting via SSH to configure WireGuard...");
     ssh::provision_server(&instance);
 
-    println!("📦 Generazione config client...");
+    // Generate WireGuard client configuration
+    println!("Generating client config...");
     wireguard::generate_client_config(&instance);
 
-    println!("🎉 VPN pronta! Ora puoi connetterti con WireGuard.");
+    // VPN setup complete
+    println!("VPN ready! You can now connect using WireGuard.");
 }

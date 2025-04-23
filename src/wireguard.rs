@@ -4,17 +4,19 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
+// Function to generate the WireGuard client configuration
 pub fn generate_client_config(instance: &InstanceInfo) {
     let ip = &instance.public_ip;
 
     let key_path = Path::new("out/server_public.key");
 
     if !key_path.exists() {
-        panic!("❌ Il file server_public.key non esiste. Controlla che il provisioning SSH sia andato a buon fine.");
+        // File missing, likely SSH provisioning failed
+        panic!("The server_public.key file does not exist. Check that SSH provisioning completed successfully.");
     }
 
     let server_pubkey = fs::read_to_string(key_path)
-        .expect("❌ Errore nella lettura della chiave pubblica server");
+        .expect("Error reading server public key");
 
     let private_key = String::from_utf8(
         Command::new("wg").arg("genkey").output().unwrap().stdout
@@ -42,5 +44,6 @@ pub fn generate_client_config(instance: &InstanceInfo) {
     let mut file = File::create(out_dir.join("client.conf")).unwrap();
     file.write_all(client_conf.as_bytes()).unwrap();
 
-    println!("✅ File client.conf salvato in ./out/");
+    // Configuration file successfully saved
+    println!("client.conf file saved to ./out/");
 }
